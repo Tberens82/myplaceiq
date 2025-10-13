@@ -20,8 +20,8 @@ CONFIG_SCHEMA = vol.Schema({
         vol.All(vol.Coerce(int), vol.Range(min=1, max=65535)),
     vol.Required(CONF_CLIENT_ID): str,
     vol.Required(CONF_CLIENT_SECRET): str,
-    vol.Optional(CONF_POLL_INTERVAL, default=60):
-        vol.All(vol.Coerce(int), vol.Range(min=10, max=300)),
+    vol.Optional(CONF_POLL_INTERVAL, default=10):
+        vol.All(vol.Coerce(int), vol.Range(min=3, max=300)),
 })
 
 class MyPlaceIQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -39,7 +39,7 @@ class MyPlaceIQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 port = user_input[CONF_PORT]
                 client_id = user_input[CONF_CLIENT_ID]
                 client_secret = user_input[CONF_CLIENT_SECRET]
-                poll_interval = user_input.get(CONF_POLL_INTERVAL, 60)
+                poll_interval = user_input.get(CONF_POLL_INTERVAL, 10)
 
                 await self.async_set_unique_id(f"{DOMAIN}_{client_id}")
                 self._abort_if_unique_id_configured()
@@ -93,10 +93,10 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
                 client_id = user_input[CONF_CLIENT_ID]
                 client_secret = user_input[CONF_CLIENT_SECRET]
                 poll_interval = user_input.get(CONF_POLL_INTERVAL,
-                    config_entry.options.get(CONF_POLL_INTERVAL, 60))
+                    config_entry.options.get(CONF_POLL_INTERVAL, 10))
 
                 # Validate inputs
-                if not isinstance(poll_interval, int) or poll_interval < 10 or poll_interval > 300:
+                if not isinstance(poll_interval, int) or poll_interval < 3 or poll_interval > 300:
                     errors[CONF_POLL_INTERVAL] = "invalid_poll_interval"
                 elif not isinstance(port, int) or port < 1 or port > 65535:
                     errors[CONF_PORT] = "invalid_port"
@@ -149,7 +149,7 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
         current_port = config_entry.data.get(CONF_PORT, 8086)
         current_client_id = config_entry.data.get(CONF_CLIENT_ID, "")
         current_client_secret = config_entry.data.get(CONF_CLIENT_SECRET, "")
-        current_poll_interval = config_entry.options.get(CONF_POLL_INTERVAL, 60)
+        current_poll_interval = config_entry.options.get(CONF_POLL_INTERVAL, 10)
 
         logger.debug("Showing options form with current poll_interval: %s", current_poll_interval)
         return self.async_show_form(
@@ -161,7 +161,7 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
                 vol.Required(CONF_CLIENT_ID, default=current_client_id): str,
                 vol.Required(CONF_CLIENT_SECRET, default=current_client_secret): str,
                 vol.Optional(CONF_POLL_INTERVAL, default=current_poll_interval):
-                    vol.All(vol.Coerce(int), vol.Range(min=10, max=300)),
+                    vol.All(vol.Coerce(int), vol.Range(min=3, max=300)),
             }),
             errors=errors,
         )

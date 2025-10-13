@@ -2,13 +2,13 @@ import json
 import logging
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.const import UnitOfTemperature
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 
 logger = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up MyPlaceIQ sensor entities from a config entry."""
-    # pylint: disable=duplicate-code
     logger.debug("Setting up sensor entities for MyPlaceIQ")
     coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
     data = coordinator.data
@@ -27,7 +27,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     zones = body.get("zones", {})
 
     entities = []
-    # pylint: enable=duplicate-code
 
     # AC System Sensors (Mode and State)
     for aircon_id, aircon_data in aircons.items():
@@ -74,20 +73,18 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     else:
         logger.warning("No sensor entities created; check data structure")
 
-class MyPlaceIQAirconSensor(SensorEntity):
-    # pylint: disable=too-many-instance-attributes
+class MyPlaceIQAirconSensor(CoordinatorEntity, SensorEntity):
     """Sensor for MyPlaceIQ AC system mode."""
 
     def __init__(self, coordinator, config_entry, aircon_id, aircon_data):
-        super().__init__()
-        self.coordinator = coordinator
+        super().__init__(coordinator)
         self._aircon_id = aircon_id
         self._config_entry = config_entry
         self._name = aircon_data.get("name", "Aircon")
         self._attr_unique_id = f"{config_entry.entry_id}_aircon_{aircon_id}_mode"
         self._attr_name = f"{self._name}_mode".replace(" ", "_").lower()
         self._attr_icon = "mdi:air-conditioner"
-        self._attr_device_class = None  # State sensor (on/off/mode)
+        self._attr_device_class = None
         self._attr_state_class = None
 
     @property
@@ -95,14 +92,16 @@ class MyPlaceIQAirconSensor(SensorEntity):
         """Return the state of the AC (mode or off)."""
         data = self.coordinator.data
         if not isinstance(data, dict) or not data or "body" not in data:
-            logger.debug("Invalid or missing coordinator data for aircon state: %s", data)
+            logger.debug("Invalid or missing coordinator data for aircon %s: %s", self._attr_unique_id, data)
             return None
         try:
             body = json.loads(data["body"])
             aircon = body.get("aircons", {}).get(self._aircon_id, {})
-            return aircon.get("mode", "unknown") if aircon.get("isOn", False) else "off"
+            state = aircon.get("mode", "unknown") if aircon.get("isOn", False) else "off"
+            logger.debug("Aircon %s mode state updated: %s", self._attr_unique_id, state)
+            return state
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for aircon state: %s", err)
+            logger.error("Failed to parse coordinator data for aircon %s: %s", self._attr_unique_id, err)
             return None
 
     @property
@@ -110,12 +109,12 @@ class MyPlaceIQAirconSensor(SensorEntity):
         """Return additional state attributes for the AC."""
         data = self.coordinator.data
         if not isinstance(data, dict) or not data or "body" not in data:
-            logger.debug("Invalid or missing coordinator data for aircon attributes: %s", data)
+            logger.debug("Invalid or missing coordinator data for aircon attributes %s: %s", self._attr_unique_id, data)
             return {}
         try:
             body = json.loads(data["body"])
             aircon = body.get("aircons", {}).get(self._aircon_id, {})
-            return {
+            attributes = {
                 "is_on": aircon.get("isOn", False),
                 "actual_temperature": aircon.get("actualTemperature"),
                 "target_temperature_heat": aircon.get("targetTemperatureHeat"),
@@ -124,8 +123,10 @@ class MyPlaceIQAirconSensor(SensorEntity):
                 "allowed_modes": aircon.get("allowedModes", []),
                 "aircon_state": aircon.get("airconState")
             }
-        except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for aircon attributes: %s", err)
+            logger.debug("Aircon %s attributes updated: %s", self._attr_unique_id, attributes)
+            return attributes
+        except (json.JSONDecodeError, TypeTypeError) as err:
+            logger.error("Failed to parse coordinator data for aircon attributes %s: %s", self._attr_unique_id, err)
             return {}
 
     @property
@@ -138,13 +139,11 @@ class MyPlaceIQAirconSensor(SensorEntity):
             "model": "Aircon",
         }
 
-class MyPlaceIQAirconStateSensor(SensorEntity):
-    # pylint: disable=too-many-instance-attributes
+class MyPlaceIQAirconStateSensor(CoordinatorEntity, SensorEntity):
     """Sensor for MyPlaceIQ AC system on/off state."""
 
     def __init__(self, coordinator, config_entry, aircon_id, aircon_data):
-        super().__init__()
-        self.coordinator = coordinator
+        super().__init__(coordinator)
         self._aircon_id = aircon_id
         self._config_entry = config_entry
         self._name = aircon_data.get("name", "Aircon")
@@ -159,14 +158,16 @@ class MyPlaceIQAirconStateSensor(SensorEntity):
         """Return the on/off state of the AC."""
         data = self.coordinator.data
         if not isinstance(data, dict) or not data or "body" not in data:
-            logger.debug("Invalid or missing coordinator data for aircon state: %s", data)
+            logger.debug("Invalid or missing coordinator data for aircon state %s: %s", self._attr_unique_id, data)
             return None
         try:
             body = json.loads(data["body"])
             aircon = body.get("aircons", {}).get(self._aircon_id, {})
-            return "on" if aircon.get("isOn", False) else "off"
+            state = "on" if aircon.get("isOn", False) else "off"
+            logger.debug("Aircon %s state updated: %s", self._attr_unique_id, state)
+            return state
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for aircon state: %s", err)
+            logger.error("Failed to parse coordinator data for aircon state %s: %s", self._attr_unique_id, err)
             return None
 
     @property
@@ -179,14 +180,11 @@ class MyPlaceIQAirconStateSensor(SensorEntity):
             "model": "Aircon",
         }
 
-class MyPlaceIQZoneSensor(SensorEntity):
-    # pylint: disable=too-many-instance-attributes
-    # pylint: disable=too-many-arguments, too-many-positional-arguments
+class MyPlaceIQZoneSensor(CoordinatorEntity, SensorEntity):
     """Sensor for MyPlaceIQ zone temperature."""
 
     def __init__(self, coordinator, config_entry, zone_id, zone_data, aircon_id):
-        super().__init__()
-        self.coordinator = coordinator
+        super().__init__(coordinator)
         self._zone_id = zone_id
         self._aircon_id = aircon_id
         self._config_entry = config_entry
@@ -203,14 +201,16 @@ class MyPlaceIQZoneSensor(SensorEntity):
         """Return the current temperature of the zone."""
         data = self.coordinator.data
         if not isinstance(data, dict) or not data or "body" not in data:
-            logger.debug("Invalid or missing coordinator data for zone state: %s", data)
+            logger.debug("Invalid or missing coordinator data for zone temperature %s: %s", self._attr_unique_id, data)
             return None
         try:
             body = json.loads(data["body"])
             zone = body.get("zones", {}).get(self._zone_id, {})
-            return zone.get("temperatureSensorValue")
+            state = zone.get("temperatureSensorValue")
+            logger.debug("Zone %s temperature state updated: %s", self._attr_unique_id, state)
+            return state
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for zone state: %s", err)
+            logger.error("Failed to parse coordinator data for zone temperature %s: %s", self._attr_unique_id, err)
             return None
 
     @property
@@ -218,12 +218,12 @@ class MyPlaceIQZoneSensor(SensorEntity):
         """Return additional state attributes for the zone."""
         data = self.coordinator.data
         if not isinstance(data, dict) or not data or "body" not in data:
-            logger.debug("Invalid or missing coordinator data for zone attributes: %s", data)
+            logger.debug("Invalid or missing coordinator data for zone attributes %s: %s", self._attr_unique_id, data)
             return {}
         try:
             body = json.loads(data["body"])
             zone = body.get("zones", {}).get(self._zone_id, {})
-            return {
+            attributes = {
                 "is_on": zone.get("isOn", False),
                 "aircon_mode": zone.get("airconMode"),
                 "target_temperature_heat": zone.get("targetTemperatureHeat"),
@@ -231,8 +231,10 @@ class MyPlaceIQZoneSensor(SensorEntity):
                 "zone_type": zone.get("zoneType"),
                 "is_clickable": zone.get("isClickable", False)
             }
+            logger.debug("Zone %s attributes updated: %s", self._attr_unique_id, attributes)
+            return attributes
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for zone attributes: %s", err)
+            logger.error("Failed to parse coordinator data for zone attributes %s: %s", self._attr_unique_id, err)
             return {}
 
     @property
@@ -246,14 +248,11 @@ class MyPlaceIQZoneSensor(SensorEntity):
             "via_device": (DOMAIN, f"{self._config_entry.entry_id}_aircon_{self._aircon_id}")
         }
 
-class MyPlaceIQZoneStateSensor(SensorEntity):
-    # pylint: disable=too-many-instance-attributes
-    # pylint: disable=too-many-arguments, too-many-positional-arguments
+class MyPlaceIQZoneStateSensor(CoordinatorEntity, SensorEntity):
     """Sensor for MyPlaceIQ zone on/off state."""
 
     def __init__(self, coordinator, config_entry, zone_id, zone_data, aircon_id):
-        super().__init__()
-        self.coordinator = coordinator
+        super().__init__(coordinator)
         self._zone_id = zone_id
         self._aircon_id = aircon_id
         self._config_entry = config_entry
@@ -269,14 +268,16 @@ class MyPlaceIQZoneStateSensor(SensorEntity):
         """Return the on/off state of the zone."""
         data = self.coordinator.data
         if not isinstance(data, dict) or not data or "body" not in data:
-            logger.debug("Invalid or missing coordinator data for zone state: %s", data)
+            logger.debug("Invalid or missing coordinator data for zone state %s: %s", self._attr_unique_id, data)
             return None
         try:
             body = json.loads(data["body"])
             zone = body.get("zones", {}).get(self._zone_id, {})
-            return "on" if zone.get("isOn", False) else "off"
+            state = "on" if zone.get("isOn", False) else "off"
+            logger.debug("Zone %s state updated: %s", self._attr_unique_id, state)
+            return state
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for zone state: %s", err)
+            logger.error("Failed to parse coordinator data for zone state %s: %s", self._attr_unique_id, err)
             return None
 
     @property
