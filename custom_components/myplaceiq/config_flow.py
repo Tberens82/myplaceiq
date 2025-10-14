@@ -20,7 +20,7 @@ CONFIG_SCHEMA = vol.Schema({
         vol.All(vol.Coerce(int), vol.Range(min=1, max=65535)),
     vol.Required(CONF_CLIENT_ID): str,
     vol.Required(CONF_CLIENT_SECRET): str,
-    vol.Optional(CONF_POLL_INTERVAL, default=10):
+    vol.Optional(CONF_POLL_INTERVAL, default=30):
         vol.All(vol.Coerce(int), vol.Range(min=3, max=300)),
 })
 
@@ -39,7 +39,7 @@ class MyPlaceIQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 port = user_input[CONF_PORT]
                 client_id = user_input[CONF_CLIENT_ID]
                 client_secret = user_input[CONF_CLIENT_SECRET]
-                poll_interval = user_input.get(CONF_POLL_INTERVAL, 10)
+                poll_interval = user_input.get(CONF_POLL_INTERVAL, 30)
 
                 await self.async_set_unique_id(f"{DOMAIN}_{client_id}")
                 self._abort_if_unique_id_configured()
@@ -57,7 +57,7 @@ class MyPlaceIQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_POLL_INTERVAL: poll_interval,
                     },
                 )
-            except Exception as err: # pylint: disable=broad-except
+            except Exception as err:
                 logger.error("Error during config flow: %s", err)
                 errors["base"] = "unknown"
 
@@ -81,7 +81,7 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
         """Initialize options flow with config_entry."""
         logger.debug("Initialized MyPlaceIQOptionsFlow for config entry: %s", config_entry.entry_id)
 
-    async def async_step_init(self, user_input=None): # pylint: disable=too-many-locals
+    async def async_step_init(self, user_input=None):
         """Manage the options."""
         errors = {}
         config_entry = self.hass.config_entries.async_get_entry(self._config_entry_id)
@@ -93,7 +93,7 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
                 client_id = user_input[CONF_CLIENT_ID]
                 client_secret = user_input[CONF_CLIENT_SECRET]
                 poll_interval = user_input.get(CONF_POLL_INTERVAL,
-                    config_entry.options.get(CONF_POLL_INTERVAL, 10))
+                    config_entry.options.get(CONF_POLL_INTERVAL, 30))
 
                 # Validate inputs
                 if not isinstance(poll_interval, int) or poll_interval < 3 or poll_interval > 300:
@@ -107,7 +107,6 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
                         await self.hass.config_entries.async_set_unique_id(
                             config_entry.entry_id, new_unique_id)
 
-                    # Update the config entry with a flag to skip reload
                     self.hass.config_entries.async_update_entry(
                         config_entry,
                         data={
@@ -118,11 +117,10 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
                         },
                         options={
                             CONF_POLL_INTERVAL: poll_interval,
-                            "_skip_reload": True,  # Flag to prevent reload
+                            "_skip_reload": True,
                         },
                     )
 
-                    # Manually update the coordinator's update_interval
                     if config_entry.entry_id in self.hass.data.get(DOMAIN, {}):
                         coordinator = self.hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
                         coordinator.update_interval = timedelta(seconds=poll_interval)
@@ -130,7 +128,6 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
                         logger.debug("Updated coordinator update_interval to %s seconds",
                             poll_interval)
 
-                    # Clear the skip_reload flag
                     self.hass.config_entries.async_update_entry(
                         config_entry,
                         options={
@@ -141,7 +138,7 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
 
                     logger.debug("Config entry updated successfully: %s", config_entry.options)
                     return self.async_create_entry(title="", data=None)
-            except Exception as err: # pylint: disable=broad-except
+            except Exception as err:
                 logger.error("Error during options flow: %s", err)
                 errors["base"] = "unknown"
 
@@ -149,7 +146,7 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
         current_port = config_entry.data.get(CONF_PORT, 8086)
         current_client_id = config_entry.data.get(CONF_CLIENT_ID, "")
         current_client_secret = config_entry.data.get(CONF_CLIENT_SECRET, "")
-        current_poll_interval = config_entry.options.get(CONF_POLL_INTERVAL, 10)
+        current_poll_interval = config_entry.options.get(CONF_POLL_INTERVAL, 30)
 
         logger.debug("Showing options form with current poll_interval: %s", current_poll_interval)
         return self.async_show_form(
