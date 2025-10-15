@@ -100,16 +100,18 @@ class MyPlaceIQAirconSensor(CoordinatorEntity, SensorEntity):
         try:
             body = json.loads(data["body"])
             aircon = body.get("aircons", {}).get(self._aircon_id, {})
-            is_on = aircon.get("isOn", self._last_known_is_on if self._last_known_is_on is not None else False)
+            is_on = aircon.get("isOn",
+                self._last_known_is_on if self._last_known_is_on is not None else False)
             if is_on:
                 self._last_known_is_on = is_on
             state = aircon.get("mode", "unknown") if is_on else "off"
-            logger.debug("Aircon %s mode state updated at %s: %s (isOn=%s, mode=%s)", 
-                         self._attr_unique_id, time.strftime("%H:%M:%S"), state, is_on, 
+            logger.debug("Aircon %s mode state updated at %s: %s (isOn=%s, mode=%s)",
+                         self._attr_unique_id, time.strftime("%H:%M:%S"), state, is_on,
                          aircon.get("mode", "missing"))
             return state
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for aircon %s: %s", self._attr_unique_id, err)
+            logger.error("Failed to parse coordinator data for aircon %s: %s",
+                self._attr_unique_id, err)
             return None
 
     @property
@@ -123,7 +125,8 @@ class MyPlaceIQAirconSensor(CoordinatorEntity, SensorEntity):
             body = json.loads(data["body"])
             aircon = body.get("aircons", {}).get(self._aircon_id, {})
             attributes = {
-                "is_on": aircon.get("isOn", self._last_known_is_on if self._last_known_is_on is not None else False),
+                "is_on": aircon.get("isOn",
+                    self._last_known_is_on if self._last_known_is_on is not None else False),
                 "actual_temperature": aircon.get("actualTemperature"),
                 "target_temperature_heat": aircon.get("targetTemperatureHeat"),
                 "target_temperature_cool": aircon.get("targetTemperatureCool"),
@@ -131,11 +134,12 @@ class MyPlaceIQAirconSensor(CoordinatorEntity, SensorEntity):
                 "allowed_modes": aircon.get("allowedModes", []),
                 "aircon_state": aircon.get("airconState")
             }
-            logger.debug("Aircon %s attributes updated at %s: %s", 
+            logger.debug("Aircon %s attributes updated at %s: %s",
                          self._attr_unique_id, time.strftime("%H:%M:%S"), attributes)
             return attributes
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for aircon attributes %s: %s", self._attr_unique_id, err)
+            logger.error("Failed to parse coordinator data for aircon attributes %s: %s",
+                self._attr_unique_id, err)
             return {}
 
     @property
@@ -174,15 +178,17 @@ class MyPlaceIQAirconStateSensor(CoordinatorEntity, SensorEntity):
         try:
             body = json.loads(data["body"])
             aircon = body.get("aircons", {}).get(self._aircon_id, {})
-            is_on = aircon.get("isOn", self._last_known_is_on if self._last_known_is_on is not None else False)
+            is_on = aircon.get("isOn",
+                self._last_known_is_on if self._last_known_is_on is not None else False)
             if is_on:
                 self._last_known_is_on = is_on
             state = "on" if is_on else "off"
-            logger.debug("Aircon %s state updated at %s: %s (isOn=%s)", 
+            logger.debug("Aircon %s state updated at %s: %s (isOn=%s)",
                          self._attr_unique_id, time.strftime("%H:%M:%S"), state, is_on)
             return state
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for aircon state %s: %s", self._attr_unique_id, err)
+            logger.error("Failed to parse coordinator data for aircon state %s: %s",
+                self._attr_unique_id, err)
             return None
 
     @property
@@ -225,11 +231,12 @@ class MyPlaceIQZoneSensor(CoordinatorEntity, SensorEntity):
             body = json.loads(data["body"])
             zone = body.get("zones", {}).get(self._zone_id, {})
             state = zone.get("temperatureSensorValue")
-            logger.debug("Zone %s temperature state updated at %s: %s", 
+            logger.debug("Zone %s temperature state updated at %s: %s",
                          self._attr_unique_id, time.strftime("%H:%M:%S"), state)
             return state
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for zone temperature %s: %s", self._attr_unique_id, err)
+            logger.error("Failed to parse coordinator data for zone temperature %s: %s",
+                self._attr_unique_id, err)
             return None
 
     @property
@@ -250,11 +257,12 @@ class MyPlaceIQZoneSensor(CoordinatorEntity, SensorEntity):
                 "zone_type": zone.get("zoneType"),
                 "is_clickable": zone.get("isClickable", False)
             }
-            logger.debug("Zone %s attributes updated at %s: %s", 
+            logger.debug("Zone %s attributes updated at %s: %s",
                          self._attr_unique_id, time.strftime("%H:%M:%S"), attributes)
             return attributes
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for zone attributes %s: %s", self._attr_unique_id, err)
+            logger.error("Failed to parse coordinator data for zone attributes %s: %s",
+                self._attr_unique_id, err)
             return {}
 
     @property
@@ -297,12 +305,12 @@ class MyPlaceIQZoneStateSensor(CoordinatorEntity, SensorEntity):
             body = json.loads(data["body"])
             zone = body.get("zones", {}).get(self._zone_id, {})
             state = "on" if zone.get("isOn", False) else "off"
-            logger.debug("Zone %s state updated at %s: %s (isOn=%s)", 
-                         self._attr_unique_id, time.strftime("%H:%M:%S"), 
+            logger.debug("Zone %s state updated at %s: %s (isOn=%s)",
+                         self._attr_unique_id, time.strftime("%H:%M:%S"),
                             state, zone.get("isOn", "missing"))
             return state
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for zone state %s: %s", 
+            logger.error("Failed to parse coordinator data for zone state %s: %s",
                 self._attr_unique_id, err)
             return None
 
