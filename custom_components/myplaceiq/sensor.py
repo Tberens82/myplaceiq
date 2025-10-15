@@ -75,6 +75,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         logger.warning("No sensor entities created; check data structure")
 
 class MyPlaceIQAirconSensor(CoordinatorEntity, SensorEntity):
+    # pylint: disable=too-many-instance-attributes
     """Sensor for MyPlaceIQ AC system mode."""
 
     def __init__(self, coordinator, config_entry, aircon_id, aircon_data):
@@ -148,6 +149,7 @@ class MyPlaceIQAirconSensor(CoordinatorEntity, SensorEntity):
         }
 
 class MyPlaceIQAirconStateSensor(CoordinatorEntity, SensorEntity):
+    # pylint: disable=too-many-instance-attributes
     """Sensor for MyPlaceIQ AC system on/off state."""
 
     def __init__(self, coordinator, config_entry, aircon_id, aircon_data):
@@ -194,9 +196,12 @@ class MyPlaceIQAirconStateSensor(CoordinatorEntity, SensorEntity):
         }
 
 class MyPlaceIQZoneSensor(CoordinatorEntity, SensorEntity):
+    # pylint: disable=too-many-instance-attributes
     """Sensor for MyPlaceIQ zone temperature."""
 
     def __init__(self, coordinator, config_entry, zone_id, zone_data, aircon_id):
+        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-positional-arguments
         super().__init__(coordinator)
         self._zone_id = zone_id
         self._aircon_id = aircon_id
@@ -264,9 +269,12 @@ class MyPlaceIQZoneSensor(CoordinatorEntity, SensorEntity):
         }
 
 class MyPlaceIQZoneStateSensor(CoordinatorEntity, SensorEntity):
+    # pylint: disable=too-many-instance-attributes
     """Sensor for MyPlaceIQ zone on/off state."""
 
     def __init__(self, coordinator, config_entry, zone_id, zone_data, aircon_id):
+        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-positional-arguments
         super().__init__(coordinator)
         self._zone_id = zone_id
         self._aircon_id = aircon_id
@@ -290,10 +298,12 @@ class MyPlaceIQZoneStateSensor(CoordinatorEntity, SensorEntity):
             zone = body.get("zones", {}).get(self._zone_id, {})
             state = "on" if zone.get("isOn", False) else "off"
             logger.debug("Zone %s state updated at %s: %s (isOn=%s)", 
-                         self._attr_unique_id, time.strftime("%H:%M:%S"), state, zone.get("isOn", "missing"))
+                         self._attr_unique_id, time.strftime("%H:%M:%S"), 
+                            state, zone.get("isOn", "missing"))
             return state
         except (json.JSONDecodeError, TypeError) as err:
-            logger.error("Failed to parse coordinator data for zone state %s: %s", self._attr_unique_id, err)
+            logger.error("Failed to parse coordinator data for zone state %s: %s", 
+                self._attr_unique_id, err)
             return None
 
     @property

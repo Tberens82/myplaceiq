@@ -15,7 +15,7 @@ from .myplaceiq import MyPlaceIQ
 
 logger = logging.getLogger(__name__)
 
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+async def async_setup(hass: HomeAssistant) -> bool:
     """Set up the MyPlaceIQ integration."""
     hass.data.setdefault(DOMAIN, {})
     logger.debug("Initializing MyPlaceIQ integration")
@@ -65,20 +65,22 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             logger.warning("Config entry %s not found in hass.data", entry.entry_id)
             return True
 
-        unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor", "button", "climate"])
+        unload_ok = await hass.config_entries.async_unload_platforms(
+            entry, ["sensor", "button", "climate"])
         if unload_ok:
             hass.data[DOMAIN].pop(entry.entry_id, None)
             logger.debug("Successfully unloaded entry: %s", entry.entry_id)
         else:
             logger.error("Failed to unload platforms for entry: %s", entry.entry_id)
         return unload_ok
-    except Exception as err:
+    except Exception as err: # pylint: disable=broad-exception-caught
         logger.error("Error unloading MyPlaceIQ entry: %s", err)
         return False
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload the config entry when options are updated."""
-    logger.debug("Reloading MyPlaceIQ entry: %s with new options: %s", entry.entry_id, entry.options)
+    logger.debug("Reloading MyPlaceIQ entry: %s with new options: %s", 
+        entry.entry_id, entry.options)
     if entry.options.get("_skip_reload", False):
         logger.debug("Skipping reload for entry %s due to _skip_reload flag", entry.entry_id)
         return

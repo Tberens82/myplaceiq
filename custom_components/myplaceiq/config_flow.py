@@ -57,7 +57,7 @@ class MyPlaceIQConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_POLL_INTERVAL: poll_interval,
                     },
                 )
-            except Exception as err:
+            except Exception as err: # pylint: disable=broad-exception-caught
                 logger.error("Error during config flow: %s", err)
                 errors["base"] = "unknown"
 
@@ -81,7 +81,7 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
         """Initialize options flow with config_entry."""
         logger.debug("Initialized MyPlaceIQOptionsFlow for config entry: %s", config_entry.entry_id)
 
-    async def async_step_init(self, user_input=None):
+    async def async_step_init(self, user_input=None): # pylint: disable=too-many-locals
         """Manage the options."""
         errors = {}
         config_entry = self.hass.config_entries.async_get_entry(self._config_entry_id)
@@ -138,7 +138,7 @@ class MyPlaceIQOptionsFlow(config_entries.OptionsFlow):
 
                     logger.debug("Config entry updated successfully: %s", config_entry.options)
                     return self.async_create_entry(title="", data=None)
-            except Exception as err:
+            except Exception as err: # pylint: disable=broad-exception-caught
                 logger.error("Error during options flow: %s", err)
                 errors["base"] = "unknown"
 
