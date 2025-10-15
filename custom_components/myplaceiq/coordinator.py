@@ -67,4 +67,4 @@ class MyPlaceIQDataUpdateCoordinator(DataUpdateCoordinator):
             if self._last_valid_data:
                 logger.debug("Returning last valid data")
                 return self._last_valid_data
-            raise UpdateFailed(f"Error fetching MyPlaceIQ data: {err}")
+            raise UpdateFailed(f"Error fetching MyPlaceIQ data: {err}") from err
