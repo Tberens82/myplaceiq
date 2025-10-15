@@ -29,7 +29,8 @@ class MyPlaceIQ:
             try:
                 session = aiohttp.ClientSession()
                 headers = {"client_id": self._client_id, "password": self._client_secret}
-                logger.debug("Attempt %d/%d: Connecting to WebSocket at %s", attempt, max_retries, self._url)
+                logger.debug("Attempt %d/%d: Connecting to WebSocket at %s",
+                    attempt, max_retries, self._url)
                 async with session.ws_connect(self._url, headers=headers, timeout=5) as ws:
                     await ws.send_json(message)
                     logger.debug("Attempt %d/%d: Command sent successfully", attempt, max_retries)
@@ -37,16 +38,18 @@ class MyPlaceIQ:
                         return {"status": "sent"}
                     # Await response for GetFullDataEvent
                     response = await ws.receive_json(timeout=10)
-                    logger.debug("Attempt %d/%d: Received response: %s", attempt, max_retries, response)
+                    logger.debug("Attempt %d/%d: Received response: %s",
+                        attempt, max_retries, response)
                     return response
             except (aiohttp.ClientError, aiohttp.WSMessageTypeError, asyncio.TimeoutError) as err:
-                logger.error("Attempt %d/%d: Error sending command or receiving response: %s", 
+                logger.error("Attempt %d/%d: Error sending command or receiving response: %s",
                              attempt, max_retries, err)
                 if attempt < max_retries:
                     logger.debug("Retrying after 1-second delay")
                     await asyncio.sleep(1)
                     continue
-                raise HomeAssistantError(f"Failed to send MyPlaceIQ command after {max_retries} attempts: {err}")
+                raise HomeAssistantError(
+                    f"Failed to send MyPlaceIQ command after {max_retries} attempts: {err}") from err
             finally:
                 if ws and not ws.closed:
                     await ws.close()
