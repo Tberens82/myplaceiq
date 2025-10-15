@@ -6,6 +6,7 @@ from homeassistant.components.climate import ClimateEntity, ClimateEntityFeature
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 
 logger = logging.getLogger(__name__)
@@ -66,7 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     else:
         logger.warning("No climate entities created; check data structure")
 
-class MyPlaceIQClimate(ClimateEntity):
+class MyPlaceIQClimate(CoordinatorEntity, ClimateEntity):
     _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_min_temp = 16
@@ -75,8 +76,7 @@ class MyPlaceIQClimate(ClimateEntity):
 
     def __init__(self, coordinator, myplaceiq, config_entry, entity_id, entity_data, is_zone, aircon_id=None):
         """Initialize the climate entity."""
-        super().__init__()
-        self.coordinator = coordinator
+        super().__init__(coordinator)
         self._myplaceiq = myplaceiq
         self._config_entry = config_entry
         self._entity_id = entity_id
@@ -91,6 +91,11 @@ class MyPlaceIQClimate(ClimateEntity):
             [HVACMode.HEAT, HVACMode.COOL, HVACMode.DRY, HVACMode.FAN_ONLY, HVACMode.OFF]
         )
         self._last_known_is_on = None  # Cache last known isOn state
+
+    def _handle_coordinator_update(self):
+        """Handle updated data from the coordinator."""
+        logger.debug("Coordinator update for %s at %s", self._attr_unique_id, time.strftime("%H:%M:%S"))
+        self.async_write_ha_state()
 
     @property
     def device_info(self):
