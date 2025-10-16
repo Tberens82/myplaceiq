@@ -74,7 +74,16 @@ class MyPlaceIQClimate(CoordinatorEntity, ClimateEntity):
     _attr_max_temp = 30
     _attr_target_temperature_step = 1.0
 
-    def __init__(self, coordinator, myplaceiq, config_entry, entity_id, entity_data, is_zone, aircon_id=None):
+    def __init__(
+        self,
+        coordinator,
+        myplaceiq,
+        config_entry,
+        entity_id,
+        entity_data,
+        is_zone,
+        aircon_id=None
+    ):
         """Initialize the climate entity."""
         super().__init__(coordinator)
         self._myplaceiq = myplaceiq
@@ -83,7 +92,7 @@ class MyPlaceIQClimate(CoordinatorEntity, ClimateEntity):
         self._is_zone = is_zone
         self._aircon_id = aircon_id if is_zone else entity_id
         self._name = entity_data.get("name", "Zone" if is_zone else "Aircon")
-        self._attr_unique_id = f"{config_entry.entry_id}_{'zone' if is_zone else 'aircon'}_{entity_id}_climate"
+        self._attr_unique_id = f"{config_entry.entry_id}_{'zone' if is_zone else 'aircon'}_{entity_id}_climate" # pylint: disable=line-too-long
         self._attr_name = f"{self._name}_climate".replace(" ", "_").lower()
         self._attr_icon = "mdi:thermostat"
         self._attr_hvac_modes = (
@@ -94,14 +103,15 @@ class MyPlaceIQClimate(CoordinatorEntity, ClimateEntity):
 
     def _handle_coordinator_update(self):
         """Handle updated data from the coordinator."""
-        logger.debug("Coordinator update for %s at %s", self._attr_unique_id, time.strftime("%H:%M:%S"))
+        logger.debug(
+            "Coordinator update for %s at %s", self._attr_unique_id, time.strftime("%H:%M:%S"))
         self.async_write_ha_state()
 
     @property
     def device_info(self):
         """Return device information."""
         device_info = {
-            "identifiers": {(DOMAIN, f"{self._config_entry.entry_id}_{'zone' if self._is_zone else 'aircon'}_{self._entity_id}")},
+            "identifiers": {(DOMAIN, f"{self._config_entry.entry_id}_{'zone' if self._is_zone else 'aircon'}_{self._entity_id}")}, # pylint: disable=line-too-long
             "name": f"{'Zone' if self._is_zone else 'Aircon'} {self._name}",
             "manufacturer": "MyPlaceIQ",
             "model": "Zone" if self._is_zone else "Aircon"
@@ -162,7 +172,9 @@ class MyPlaceIQClimate(CoordinatorEntity, ClimateEntity):
             body = json.loads(data["body"])
             aircon = body.get("aircons", {}).get(
                 self._aircon_id if self._is_zone else self._entity_id, {})
-            is_on = aircon.get("isOn", self._last_known_is_on if self._last_known_is_on is not None else False)
+            is_on = aircon.get(
+                "isOn", self._last_known_is_on if self._last_known_is_on is not None else False
+            )
             if is_on:
                 self._last_known_is_on = is_on
             if self._is_zone:
@@ -171,7 +183,7 @@ class MyPlaceIQClimate(CoordinatorEntity, ClimateEntity):
                 if is_zone_on:
                     self._last_known_is_on = is_zone_on
                 state = HVACMode.OFF if not is_zone_on else HVACMode.AUTO
-                logger.debug("Zone %s hvac_mode updated at %s: %s (isOn=%s)", 
+                logger.debug("Zone %s hvac_mode updated at %s: %s (isOn=%s)",
                              self._attr_unique_id, time.strftime("%H:%M:%S"), state, is_zone_on)
                 return state
             state = (
@@ -182,8 +194,8 @@ class MyPlaceIQClimate(CoordinatorEntity, ClimateEntity):
                 HVACMode.FAN_ONLY if aircon.get("mode") == "fan" else
                 HVACMode.OFF
             )
-            logger.debug("Aircon %s hvac_mode updated at %s: %s (isOn=%s, mode=%s)", 
-                         self._attr_unique_id, time.strftime("%H:%M:%S"), state, is_on, 
+            logger.debug("Aircon %s hvac_mode updated at %s: %s (isOn=%s, mode=%s)",
+                         self._attr_unique_id, time.strftime("%H:%M:%S"), state, is_on,
                          aircon.get("mode", "missing"))
             return state
         except (json.JSONDecodeError, TypeError) as err:
@@ -227,7 +239,8 @@ class MyPlaceIQClimate(CoordinatorEntity, ClimateEntity):
         else:
             body["aircons"][self._entity_id] = target
         self.coordinator.data["body"] = json.dumps(body)
-        logger.debug("Optimistic update for %s: set temperature to %s", self._attr_name, temperature)
+        logger.debug("Optimistic update for %s: set temperature to %s",
+            self._attr_name, temperature)
         self.async_write_ha_state()
 
         await self._myplaceiq.send_command(command)
@@ -301,7 +314,7 @@ class MyPlaceIQClimate(CoordinatorEntity, ClimateEntity):
             body["aircons"][self._entity_id] = aircon
 
         self.coordinator.data["body"] = json.dumps(body)
-        logger.debug("Optimistic update for %s: set hvac_mode to %s, isOn=%s", 
+        logger.debug("Optimistic update for %s: set hvac_mode to %s, isOn=%s",
                      self._attr_name, hvac_mode, self._last_known_is_on)
         self.async_write_ha_state()
 
