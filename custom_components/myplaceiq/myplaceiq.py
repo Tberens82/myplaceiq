@@ -49,7 +49,8 @@ class MyPlaceIQ:
                     await asyncio.sleep(1)
                     continue
                 raise HomeAssistantError(
-                    f"Failed to send MyPlaceIQ command after {max_retries} attempts: {err}") from err
+                    f"Failed to send MyPlaceIQ command after {max_retries} attempts: {err}"
+                ) from err
             finally:
                 if ws and not ws.closed:
                     await ws.close()
