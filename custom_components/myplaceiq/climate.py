@@ -68,6 +68,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         logger.warning("No climate entities created; check data structure")
 
 class MyPlaceIQClimate(CoordinatorEntity, ClimateEntity):
+    # pylint: disable=too-many-instance-attributes
     _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_min_temp = 16

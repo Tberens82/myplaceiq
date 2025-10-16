@@ -7,7 +7,8 @@ disable=
     too-few-public-methods,
     invalid-name,
     protected-access,
-    import-error
+    import-error,
+    duplicate-code
 
 [SIMILARITIES]
 
