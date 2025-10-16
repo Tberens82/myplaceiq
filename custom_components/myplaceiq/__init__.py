@@ -15,7 +15,7 @@ from .myplaceiq import MyPlaceIQ
 
 logger = logging.getLogger(__name__)
 
-async def async_setup(hass: HomeAssistant) -> bool:
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the MyPlaceIQ integration."""
     hass.data.setdefault(DOMAIN, {})
     logger.debug("Initializing MyPlaceIQ integration")
