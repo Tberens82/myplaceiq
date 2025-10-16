@@ -74,6 +74,8 @@ class MyPlaceIQClimate(CoordinatorEntity, ClimateEntity):
     _attr_max_temp = 30
     _attr_target_temperature_step = 1.0
 
+    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-positional-arguments
     def __init__(
         self,
         coordinator,
