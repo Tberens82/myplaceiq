@@ -5,6 +5,14 @@ All notable changes to the MyPlaceIQ Home Assistant integration will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.1.0] - 2025-10-17
+### Added
+- Ensure that climate entities are updated at the same time as the base entities and follow the same polling interval that is defined when configuring the integration.
+
+### Fixed
+- Fixed an [issue](https://github.com/anwickes/myplaceiq/issues/13) where the poller was not pulling the correct data from the myplaceiq hub. This subsequently fixes as issue where data is not being updated in home assistant after being modified externally (ie myplaceiq application).
+
+
 ## [1.0.0] - 2025-10-10
 ### Added
 - First official release so contains all added functionality that has been mentioned in previous changelog updates.
