@@ -255,7 +255,7 @@ class MyPlaceIQZoneSensor(CoordinatorEntity, SensorEntity):
                 "target_temperature_heat": zone.get("targetTemperatureHeat"),
                 "target_temperature_cool": zone.get("targetTemperatureCool"),
                 "zone_type": zone.get("zoneType"),
-                "is_clickable": zone.get("isClickable", False)
+                "is_clickable": zone.get("isClickable")
                 "isPriorityZoneActive": zone.get("isPriorityZoneActive")
                 "isPriorityZone": zone.get("isPriorityZone")
                 "airconMode": zone.get("airconMode")
