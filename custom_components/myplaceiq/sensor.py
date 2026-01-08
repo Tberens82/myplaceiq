@@ -256,6 +256,12 @@ class MyPlaceIQZoneSensor(CoordinatorEntity, SensorEntity):
                 "target_temperature_cool": zone.get("targetTemperatureCool"),
                 "zone_type": zone.get("zoneType"),
                 "is_clickable": zone.get("isClickable", False)
+                "isPriorityZoneActive": zone.get("isPriorityZoneActive")
+                "isPriorityZone": zone.get("isPriorityZone")
+                "airconMode": zone.get("airconMode")
+                "targetPercentCool": zone.get("targetPercentCool")
+                "targetPercentHeat": zone.get("targetPercentHeat")
+                "actualPercent": zone.get("actualPercent")
             }
             logger.debug("Zone %s attributes updated at %s: %s",
                          self._attr_unique_id, time.strftime("%H:%M:%S"), attributes)
